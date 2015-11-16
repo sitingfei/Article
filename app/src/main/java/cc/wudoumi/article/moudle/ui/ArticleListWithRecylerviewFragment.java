@@ -1,11 +1,16 @@
 package cc.wudoumi.article.moudle.ui;
 
 
-import android.app.Fragment;
 import android.os.Bundle;
+import android.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -22,44 +27,52 @@ import cc.wudoumi.article.common.base.ArticleBaseLodingFragment;
 import cc.wudoumi.article.common.response.GsonListSuccessListner;
 import cc.wudoumi.article.common.util.CommonCache;
 import cc.wudoumi.article.common.util.ParemsTool;
+import cc.wudoumi.article.moudle.adapter.ArticleAdapter;
 import cc.wudoumi.article.moudle.adapter.ArticleListAdapter;
 import cc.wudoumi.framework.net.ErrorMessage;
-import cc.wudoumi.framework.net.NetInterfaceFactory;
 import cc.wudoumi.framework.net.RequestParem;
 import cc.wudoumi.framework.net.ResponseListner;
-import cc.wudoumi.framework.net.SuccessListner;
 import cc.wudoumi.framework.views.listview.pullable.PullToRefreshLayout;
 import cc.wudoumi.framework.views.listview.pullable.State;
+import jp.wasabeef.recyclerview.animators.FadeInAnimator;
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
+import jp.wasabeef.recyclerview.animators.adapters.AlphaInAnimationAdapter;
+import jp.wasabeef.recyclerview.animators.adapters.ScaleInAnimationAdapter;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ArticleListFragment extends ArticleBaseLodingFragment {
+public class ArticleListWithRecylerviewFragment extends ArticleBaseLodingFragment {
 
-    private ListView mListView;
+
+
+    private RecyclerView mListView;
     private PullToRefreshLayout mPullToRefreshLayout;
 
-    ImageView imageView;
 
     private int childTypeId;
 
     private int page = 1;
 
     private List<Article> articleList = new ArrayList<>();
-    private ArticleListAdapter articleListAdapter;
+    private ArticleAdapter articleAdapter;
+
+    private ScaleInAnimationAdapter scaleAdapter;
 
     private int scrrenWidth;
+    public ArticleListWithRecylerviewFragment() {
+        // Required empty public constructor
+    }
 
-    public static ArticleListFragment getInstance(int childTypeId) {
-        ArticleListFragment articleListFragment = new ArticleListFragment();
+
+    public static ArticleListWithRecylerviewFragment getInstance(int childTypeId) {
+        ArticleListWithRecylerviewFragment articleListFragment = new ArticleListWithRecylerviewFragment();
         Bundle bundle = new Bundle();
         bundle.putInt("childTypeId", childTypeId);
         articleListFragment.setArguments(bundle);
 
         return articleListFragment;
     }
-
-
 
 
     @Override
@@ -74,14 +87,13 @@ public class ArticleListFragment extends ArticleBaseLodingFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.fragment_article;
+        return R.layout.fragment_article_list_with_recylerview;
     }
 
     @Override
     protected void initView() {
-        mListView = (ListView) findViewById(R.id.listview);
-        imageView = new ImageView(getActivity());
-        imageView.setLayoutParams(new ListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, scrrenWidth * 3 / 5));
+        mListView = (RecyclerView) findViewById(R.id.listview);
+
 
         mPullToRefreshLayout = (PullToRefreshLayout) findViewById(R.id.pullLayou);
 
@@ -90,14 +102,14 @@ public class ArticleListFragment extends ArticleBaseLodingFragment {
 
     @Override
     protected void banderDataAndListner() {
-        Glide.with(this)
-                .load(CommonCache.get().getImageUrl(childTypeId))
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(imageView);
-        mListView.addHeaderView(imageView);
-        articleListAdapter = new ArticleListAdapter(articleList, getActivity());
-        mListView.setAdapter(articleListAdapter);
-
+        mListView.setItemAnimator(new FadeInAnimator());
+        articleAdapter = new ArticleAdapter(getActivity(),articleList,childTypeId);
+        AlphaInAnimationAdapter alphaAdapter = new AlphaInAnimationAdapter(articleAdapter);
+        scaleAdapter = new ScaleInAnimationAdapter(alphaAdapter);
+        mListView.setAdapter(scaleAdapter);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mListView.setLayoutManager(linearLayoutManager);
         mPullToRefreshLayout.setOnRefreshListener(new PullToRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh(PullToRefreshLayout pullToRefreshLayout) {
@@ -146,11 +158,13 @@ public class ArticleListFragment extends ArticleBaseLodingFragment {
                     public boolean onSuccess(List<Article> articles) throws Exception {
                         if (page == 1) {
                             articleList.clear();
+                            articleList.add(new Article());
                         }
                         int size = articleList.size();
+
                         articleList.addAll(articles);
-                        articleListAdapter.notifyDataSetChanged();
-                        mListView.setSelection(size);
+                        scaleAdapter.notifyDataSetChanged();
+                       // mListView.scrollToPosition(size);
                         return true;
                     }
                 });
@@ -167,18 +181,4 @@ public class ArticleListFragment extends ArticleBaseLodingFragment {
     }
 
 
-
-
-
-
-    boolean first = true;
-
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        if (first) {
-            first = false;
-        }
-        super.setUserVisibleHint(isVisibleToUser);
-
-    }
 }

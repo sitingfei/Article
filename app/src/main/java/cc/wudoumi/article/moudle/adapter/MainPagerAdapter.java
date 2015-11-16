@@ -11,6 +11,7 @@ import java.util.List;
 
 import cc.wudoumi.article.bean.ArticleType;
 import cc.wudoumi.article.moudle.ui.ArticleListFragment;
+import cc.wudoumi.article.moudle.ui.ArticleListWithRecylerviewFragment;
 
 /**
  * author: qianjujun on 2015/11/12 16.
@@ -29,7 +30,8 @@ public class MainPagerAdapter extends FragmentPagerAdapter {
 
         //return BlankFragment.newInstance(position);
 
-        return ArticleListFragment.getInstance(articleTypes.get(position).getId());
+        //return ArticleListFragment.getInstance(articleTypes.get(position).getId());
+        return ArticleListWithRecylerviewFragment.getInstance(articleTypes.get(position).getId());
     }
 
     @Override

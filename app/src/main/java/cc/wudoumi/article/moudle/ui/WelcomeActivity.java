@@ -2,6 +2,8 @@ package cc.wudoumi.article.moudle.ui;
 
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 
 import com.google.gson.reflect.TypeToken;
@@ -39,48 +41,80 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_welcome);
-        articleTypeDao = DbHelper.getInstance().getDaoSession().getArticleTypeDao();
-        defaultImageDao = DbHelper.getInstance().getDaoSession().getDefaultImageDao();
-        if(articleTypeDao.queryBuilder().count()>0){
-            ActivityTool.turnOther(WelcomeActivity.this, MainActivity.class);
-            finish();
-            return;
-        }
+
+        check();
 
 
-        NetInterfaceFactory.getInterface().doRequest(ParemsTool.getArticleType(),
-                new TipsLodingResposeListner(this,false){
-                    @Override
-                    public void onEnd(boolean success, ErrorMessage e) {
-                        super.onEnd(success, e);
-                        if(success){
+    }
+
+    private Handler mHandler = new Handler();
+
+    private void check(){
+        new Thread(){
+            @Override
+            public void run() {
+                articleTypeDao = DbHelper.getInstance().getDaoSession().getArticleTypeDao();
+                defaultImageDao = DbHelper.getInstance().getDaoSession().getDefaultImageDao();
+                if(articleTypeDao.queryBuilder().count()>0){
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
                             ActivityTool.turnOther(WelcomeActivity.this, MainActivity.class);
                             finish();
                         }
-                    }
-                },
-                new GsonListSuccessListner<List<ArticleType>>(new TypeToken<List<ArticleType>>(){}.getType()) {
-                    @Override
-                    public boolean onSuccess(List<ArticleType> articleTypes) throws Exception {
+                    },500);
+                }else{
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            doWork();
+                        }
+                    });
+                }
+            }
+        }.start();
+    }
 
-                        articleTypeDao.insertInTx(articleTypes);
+    private void doWork(){
+        NetInterfaceFactory.getInterface().doRequest(ParemsTool.getArticleType(),
+                new TipsLodingResposeListner(this, false),
+                new GsonListSuccessListner<List<ArticleType>>(new TypeToken<List<ArticleType>>() {
+                }.getType()) {
+                    @Override
+                    public boolean onSuccess(final List<ArticleType> articleTypes) throws Exception {
+                        new Thread(){
+                            @Override
+                            public void run() {
+                                articleTypeDao.insertInTx(articleTypes);
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ActivityTool.turnOther(WelcomeActivity.this, MainActivity.class);
+                                        finish();
+                                    }
+                                });
+                            }
+                        }.start();
+
                         return true;
                     }
                 });
 
         NetInterfaceFactory.getInterface().doRequest(ParemsTool.getArticleDefaultImage(),
-                new LodingResposeListner(this,false),
-                new GsonListSuccessListner<List<DefaultImage>>(new TypeToken<List<DefaultImage>>(){}.getType()) {
+                new LodingResposeListner(this, false),
+                new GsonListSuccessListner<List<DefaultImage>>(new TypeToken<List<DefaultImage>>() {
+                }.getType()) {
                     @Override
-                    public boolean onSuccess(List<DefaultImage> defaultImages) throws Exception {
+                    public boolean onSuccess(final List<DefaultImage> defaultImages) throws Exception {
+                        new Thread(){
+                            @Override
+                            public void run() {
+                                defaultImageDao.insertInTx(defaultImages);
+                            }
+                        }.start();
 
-                        defaultImageDao.insertInTx(defaultImages);
                         return true;
                     }
                 });
-
-
-
-
     }
 }

@@ -3,6 +3,7 @@ package cc.wudoumi.framework.views.listview.pullable;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -120,7 +121,9 @@ public class PullToRefreshLayout extends RelativeLayout {
             mViewType = CanPullUtil.ViewType.ADAPTERVIEW;
         } else if (pullableView instanceof WebView) {
             mViewType = CanPullUtil.ViewType.WEBVIEW;
-        } else {
+        }  else if (pullableView instanceof RecyclerView) {
+            mViewType = CanPullUtil.ViewType.RECYLERVIEW;
+        }else {
             mViewType = CanPullUtil.ViewType.OTHERVIEW;
         }
 
