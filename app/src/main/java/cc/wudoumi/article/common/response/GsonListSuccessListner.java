@@ -8,18 +8,15 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 
-import cc.wudoumi.framework.net.AuthException;
 import cc.wudoumi.framework.net.DataException;
-import cc.wudoumi.framework.net.ErrorMessage;
 import cc.wudoumi.framework.net.ParseDataException;
-import cc.wudoumi.framework.net.SuccessListner;
 
 
 /**
  * author: qianjujun on 2015/9/17 20.
  * email:  qianjujun@imcoming.cn
  */
-public abstract class GsonListSuccessListner<T> implements SuccessListner<T> {
+public abstract class GsonListSuccessListner<T> extends BaseSuccessListner<T> {
     private static Gson gson = new Gson();
     private Type type;
 
@@ -35,22 +32,17 @@ public abstract class GsonListSuccessListner<T> implements SuccessListner<T> {
         }
         try {
             JSONObject jsonObject = new JSONObject(str);
-            String flag = jsonObject.getString("flag");
-            if ("1".equals(flag)) {
+            int flag = jsonObject.getInt("flag");
 
-
-                T t = gson.fromJson(jsonObject.getString("data"), type);
-
-                return t;
-            } else if("-633".equals(flag)){
-                throw new AuthException();
-            }else {
-                String message = jsonObject.getString("message");
-                if (TextUtils.isEmpty(message)) {
-                    message = "服务器数据错误";
-                }
-                throw new DataException(message,flag);
+            switch (flag){
+                case 1:
+                    T t = gson.fromJson(jsonObject.getString("data"), type);
+                    return t;
+                default:
+                    String message = jsonObject.getString("message");
+                    throw  handlerServerError.handler(flag,message);
             }
+
         }catch (DataException e) {//服务端提示
             throw e;
         }catch (Exception e) {//数据解析错误
@@ -59,8 +51,5 @@ public abstract class GsonListSuccessListner<T> implements SuccessListner<T> {
         }
     }
 
-    @Override
-    public void onFail(ErrorMessage ne) {
 
-    }
 }

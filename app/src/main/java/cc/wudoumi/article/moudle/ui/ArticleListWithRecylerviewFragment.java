@@ -3,19 +3,11 @@ package cc.wudoumi.article.moudle.ui;
 
 import android.os.Bundle;
 import android.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.OvershootInterpolator;
-import android.widget.ImageView;
-import android.widget.ListView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
@@ -28,14 +20,12 @@ import cc.wudoumi.article.common.response.GsonListSuccessListner;
 import cc.wudoumi.article.common.util.CommonCache;
 import cc.wudoumi.article.common.util.ParemsTool;
 import cc.wudoumi.article.moudle.adapter.ArticleAdapter;
-import cc.wudoumi.article.moudle.adapter.ArticleListAdapter;
+import cc.wudoumi.framework.interfaces.RequestListner;
 import cc.wudoumi.framework.net.ErrorMessage;
 import cc.wudoumi.framework.net.RequestParem;
-import cc.wudoumi.framework.net.ResponseListner;
 import cc.wudoumi.framework.views.listview.pullable.PullToRefreshLayout;
 import cc.wudoumi.framework.views.listview.pullable.State;
 import jp.wasabeef.recyclerview.animators.FadeInAnimator;
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 import jp.wasabeef.recyclerview.animators.adapters.AlphaInAnimationAdapter;
 import jp.wasabeef.recyclerview.animators.adapters.ScaleInAnimationAdapter;
 
@@ -46,7 +36,7 @@ public class ArticleListWithRecylerviewFragment extends ArticleBaseLodingFragmen
 
 
 
-    private RecyclerView mListView;
+    private RecyclerView mRecyclerView;
     private PullToRefreshLayout mPullToRefreshLayout;
 
 
@@ -92,7 +82,7 @@ public class ArticleListWithRecylerviewFragment extends ArticleBaseLodingFragmen
 
     @Override
     protected void initView() {
-        mListView = (RecyclerView) findViewById(R.id.listview);
+        mRecyclerView = (RecyclerView) findViewById(R.id.listview);
 
 
         mPullToRefreshLayout = (PullToRefreshLayout) findViewById(R.id.pullLayou);
@@ -102,14 +92,18 @@ public class ArticleListWithRecylerviewFragment extends ArticleBaseLodingFragmen
 
     @Override
     protected void banderDataAndListner() {
-        mListView.setItemAnimator(new FadeInAnimator());
+        mRecyclerView.setItemAnimator(new FadeInAnimator());
         articleAdapter = new ArticleAdapter(getActivity(),articleList,childTypeId);
         AlphaInAnimationAdapter alphaAdapter = new AlphaInAnimationAdapter(articleAdapter);
         scaleAdapter = new ScaleInAnimationAdapter(alphaAdapter);
-        mListView.setAdapter(scaleAdapter);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        mListView.setLayoutManager(linearLayoutManager);
+        scaleAdapter.setFirstOnly(false);
+        mRecyclerView.setAdapter(scaleAdapter);
+        //LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        //linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+
+
+
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mPullToRefreshLayout.setOnRefreshListener(new PullToRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh(PullToRefreshLayout pullToRefreshLayout) {
@@ -127,8 +121,8 @@ public class ArticleListWithRecylerviewFragment extends ArticleBaseLodingFragmen
     }
 
     @Override
-    protected void requestData(ResponseListner responseListner) {
-        getArticleListByNet(responseListner);
+    protected void requestData(RequestListner requestListner) {
+        getArticleListByNet(requestListner);
     }
 
     @Override
@@ -149,9 +143,9 @@ public class ArticleListWithRecylerviewFragment extends ArticleBaseLodingFragmen
         }
     }
 
-    private void getArticleListByNet(ResponseListner responseListner) {
+    private void getArticleListByNet(RequestListner requestListner) {
         RequestParem requestParem = ParemsTool.getArticleList(childTypeId, page);
-        netInterface.doRequest(requestParem, responseListner,
+        requestManager.doRequest(requestParem, requestListner,
                 new GsonListSuccessListner<List<Article>>(new TypeToken<List<Article>>() {
                 }.getType()) {
                     @Override
@@ -160,18 +154,23 @@ public class ArticleListWithRecylerviewFragment extends ArticleBaseLodingFragmen
                             articleList.clear();
                             articleList.add(new Article());
                         }
-                        int size = articleList.size();
+                        int size = articleList.size()-1;
 
                         articleList.addAll(articles);
+
+                        if(size>=0){
+                            //mRecyclerView.getLayoutManager().scrollToPosition(size);
+                            mRecyclerView.scrollToPosition(size);
+                        }
+
                         scaleAdapter.notifyDataSetChanged();
-                       // mListView.scrollToPosition(size);
                         return true;
                     }
                 });
     }
 
     private void getArticleListByNet() {
-        getArticleListByNet(getResponseListner());
+        getArticleListByNet(getRequestListner());
     }
 
 

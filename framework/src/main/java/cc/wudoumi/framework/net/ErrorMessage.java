@@ -27,7 +27,7 @@ public class ErrorMessage {
 
     private String detaileMessage;// 真实错误信息，异常里的detail
 
-    private String errorFlag;
+    private int errorFlag;
 
 
     public int getErrorType() {
@@ -56,11 +56,11 @@ public class ErrorMessage {
     }
 
 
-    public String getErrorFlag() {
+    public int getErrorFlag() {
         return errorFlag;
     }
 
-    public void setErrorFlag(String errorFlag) {
+    public void setErrorFlag(int errorFlag) {
         this.errorFlag = errorFlag;
     }
 

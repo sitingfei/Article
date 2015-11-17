@@ -5,7 +5,6 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -23,11 +22,9 @@ import cc.wudoumi.article.common.response.GsonListSuccessListner;
 import cc.wudoumi.article.common.util.CommonCache;
 import cc.wudoumi.article.common.util.ParemsTool;
 import cc.wudoumi.article.moudle.adapter.ArticleListAdapter;
+import cc.wudoumi.framework.interfaces.RequestListner;
 import cc.wudoumi.framework.net.ErrorMessage;
-import cc.wudoumi.framework.net.NetInterfaceFactory;
 import cc.wudoumi.framework.net.RequestParem;
-import cc.wudoumi.framework.net.ResponseListner;
-import cc.wudoumi.framework.net.SuccessListner;
 import cc.wudoumi.framework.views.listview.pullable.PullToRefreshLayout;
 import cc.wudoumi.framework.views.listview.pullable.State;
 
@@ -115,8 +112,8 @@ public class ArticleListFragment extends ArticleBaseLodingFragment {
     }
 
     @Override
-    protected void requestData(ResponseListner responseListner) {
-        getArticleListByNet(responseListner);
+    protected void requestData(RequestListner requestListner) {
+        getArticleListByNet(requestListner);
     }
 
     @Override
@@ -137,9 +134,9 @@ public class ArticleListFragment extends ArticleBaseLodingFragment {
         }
     }
 
-    private void getArticleListByNet(ResponseListner responseListner) {
+    private void getArticleListByNet(RequestListner requestListner) {
         RequestParem requestParem = ParemsTool.getArticleList(childTypeId, page);
-        netInterface.doRequest(requestParem, responseListner,
+        requestManager.doRequest(requestParem, requestListner,
                 new GsonListSuccessListner<List<Article>>(new TypeToken<List<Article>>() {
                 }.getType()) {
                     @Override
@@ -157,7 +154,7 @@ public class ArticleListFragment extends ArticleBaseLodingFragment {
     }
 
     private void getArticleListByNet() {
-        getArticleListByNet(getResponseListner());
+        getArticleListByNet(getRequestListner());
     }
 
 

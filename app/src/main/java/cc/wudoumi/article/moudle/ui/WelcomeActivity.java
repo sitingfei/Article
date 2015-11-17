@@ -3,7 +3,6 @@ package cc.wudoumi.article.moudle.ui;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 
 import com.google.gson.reflect.TypeToken;
@@ -14,19 +13,14 @@ import cc.wudoumi.article.MainActivity;
 import cc.wudoumi.article.R;
 import cc.wudoumi.article.bean.ArticleType;
 import cc.wudoumi.article.bean.DefaultImage;
-import cc.wudoumi.article.bean.SuperBean;
-import cc.wudoumi.article.common.response.BaseResposeListner;
+import cc.wudoumi.article.common.response.BaseRequestListner;
 import cc.wudoumi.article.common.response.GsonListSuccessListner;
-import cc.wudoumi.article.common.response.LodingResposeListner;
-import cc.wudoumi.article.common.response.TipsLodingResposeListner;
 import cc.wudoumi.article.common.util.ActivityTool;
-import cc.wudoumi.article.common.util.CommonCache;
 import cc.wudoumi.article.common.util.ParemsTool;
 import cc.wudoumi.article.dao.ArticleTypeDao;
 import cc.wudoumi.article.dao.DbHelper;
 import cc.wudoumi.article.dao.DefaultImageDao;
-import cc.wudoumi.framework.net.ErrorMessage;
-import cc.wudoumi.framework.net.NetInterfaceFactory;
+import cc.wudoumi.framework.utils.NetUtil;
 
 
 /**
@@ -76,13 +70,13 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void doWork(){
-        NetInterfaceFactory.getInterface().doRequest(ParemsTool.getArticleType(),
-                new TipsLodingResposeListner(this, false),
+        NetUtil.getRequestManager().doRequest(ParemsTool.getArticleType(),
+                new BaseRequestListner(this, true),
                 new GsonListSuccessListner<List<ArticleType>>(new TypeToken<List<ArticleType>>() {
                 }.getType()) {
                     @Override
                     public boolean onSuccess(final List<ArticleType> articleTypes) throws Exception {
-                        new Thread(){
+                        new Thread() {
                             @Override
                             public void run() {
                                 articleTypeDao.insertInTx(articleTypes);
@@ -100,13 +94,13 @@ public class WelcomeActivity extends AppCompatActivity {
                     }
                 });
 
-        NetInterfaceFactory.getInterface().doRequest(ParemsTool.getArticleDefaultImage(),
-                new LodingResposeListner(this, false),
+        NetUtil.getRequestManager().doRequest(ParemsTool.getArticleDefaultImage(),
+                new BaseRequestListner(this),
                 new GsonListSuccessListner<List<DefaultImage>>(new TypeToken<List<DefaultImage>>() {
                 }.getType()) {
                     @Override
                     public boolean onSuccess(final List<DefaultImage> defaultImages) throws Exception {
-                        new Thread(){
+                        new Thread() {
                             @Override
                             public void run() {
                                 defaultImageDao.insertInTx(defaultImages);

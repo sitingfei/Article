@@ -1,9 +1,7 @@
 package cc.wudoumi.framework.base;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,11 +9,10 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import cc.wudoumi.framework.R;
-import cc.wudoumi.framework.ioc.ViewUtils;
+import cc.wudoumi.framework.interfaces.RequestListner;
+import cc.wudoumi.framework.interfaces.RequestManager;
 import cc.wudoumi.framework.net.ErrorMessage;
-import cc.wudoumi.framework.net.NetInterface;
-import cc.wudoumi.framework.net.NetInterfaceFactory;
-import cc.wudoumi.framework.net.ResponseListner;
+import cc.wudoumi.framework.utils.NetUtil;
 import cc.wudoumi.framework.views.loadview.EmptyLoadView;
 import cc.wudoumi.framework.views.loadview.Iretry;
 
@@ -31,7 +28,7 @@ public abstract class BaseLoadingFragment extends Fragment {
 
     private View laoutView;//
 
-    protected NetInterface netInterface;
+    protected RequestManager requestManager;
 
 
     private FrameLayout viewContent;
@@ -44,6 +41,8 @@ public abstract class BaseLoadingFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        requestManager = NetUtil.getRequestManager();
     }
 
 
@@ -57,16 +56,13 @@ public abstract class BaseLoadingFragment extends Fragment {
     protected abstract void banderDataAndListner();
 
 
-    protected abstract void requestData(ResponseListner responseListner);
+    protected abstract void requestData(RequestListner responseListner);
 
 
     protected void requestEnd(boolean success, ErrorMessage e,boolean openLoding) {
 
     }
 
-    protected boolean requestSuccess(String result) throws Exception {
-        return false;
-    }
 
     private boolean openLoding = true;
 
@@ -101,7 +97,7 @@ public abstract class BaseLoadingFragment extends Fragment {
         if (cacheView == null) {
             cacheView = createView(inflater, container, savedInstanceState);
             if(!loadDataEveryTime()){
-                requestData(getResponseListner());
+                requestData(getRequestListner());
             }
         }
         ViewGroup v = (ViewGroup) cacheView.getParent();
@@ -110,7 +106,7 @@ public abstract class BaseLoadingFragment extends Fragment {
         }
 
         if(loadDataEveryTime()){
-            requestData(getResponseListner());
+            requestData(getRequestListner());
         }
 
         onCreateView(savedInstanceState);
@@ -125,7 +121,7 @@ public abstract class BaseLoadingFragment extends Fragment {
         emptyLoadView.setIretry(new Iretry() {
             @Override
             public void retryQuest() {
-                requestData(getResponseListner());
+                requestData(getRequestListner());
             }
         });
         viewHead = (RelativeLayout) view.findViewById(R.id.view_head);
@@ -143,28 +139,19 @@ public abstract class BaseLoadingFragment extends Fragment {
 
 
 
-    protected final ResponseListner getResponseListner() {
+    protected final RequestListner getRequestListner() {
 
-        ResponseListner responseListner = new ResponseListner(getRequestTag()) {
+        RequestListner responseListner = new RequestListner(getRequestTag()) {
 
             @Override
             public void onStart() {
-                super.onStart();
                 if (openLoding) {
                     viewContent.setVisibility(View.GONE);
                     emptyLoadView.showLoading();
                 }
-
             }
-
-            @Override
-            public boolean onSuccess(String result) throws Exception {
-                return requestSuccess(result);
-            }
-
             @Override
             public void onEnd(boolean success, ErrorMessage e) {
-                super.onEnd(success, e);
                 if (openLoding) {
                     if (success) {
                         viewContent.setVisibility(View.VISIBLE);
@@ -179,10 +166,8 @@ public abstract class BaseLoadingFragment extends Fragment {
                     }
                     requestEnd(success, e,true);
                 } else {
-                   requestEnd(success, e,false);
+                    requestEnd(success, e,false);
                 }
-
-
             }
         };
         return responseListner;
@@ -213,7 +198,7 @@ public abstract class BaseLoadingFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
 
-        NetInterfaceFactory.getInterface().cancelContainTag(getRequestTag());
+        requestManager.cancelContainTag(getRequestTag());
 
         if(!needCacheView()){
             cacheView = null;

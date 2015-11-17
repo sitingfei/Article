@@ -3,8 +3,7 @@ package cc.wudoumi.framework.interfaces;
 import java.util.UUID;
 
 import cc.wudoumi.framework.net.ErrorMessage;
-import cc.wudoumi.framework.net.NetInterface;
-import cc.wudoumi.framework.net.ParseDataException;
+import cc.wudoumi.framework.utils.NetUtil;
 
 /**
  * author: qianjujun on 2015/11/16 17.
@@ -25,16 +24,14 @@ public abstract class RequestListner {
 
 
 
-    public void onStart(){}
+    public abstract void onStart();
 
 
 
-    public void onEnd(boolean success,ErrorMessage e){
+    public abstract void onEnd(boolean success,ErrorMessage e);
 
-    }
-
-    public final void cancel(NetInterface netInterface){
-        netInterface.cancel(tag);
+    public final void cancel(){
+        NetUtil.getRequestManager().cancel(tag);
     }
 
     public final String getTag(){

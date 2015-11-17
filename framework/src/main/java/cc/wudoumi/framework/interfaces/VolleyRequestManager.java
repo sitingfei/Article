@@ -2,6 +2,9 @@ package cc.wudoumi.framework.interfaces;
 
 import android.app.Application;
 import android.content.Context;
+import android.util.Log;
+
+import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -11,6 +14,8 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.Volley;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
+
 import cc.wudoumi.framework.net.EmptyDataException;
 import cc.wudoumi.framework.net.ErrorMessage;
 import cc.wudoumi.framework.net.RequestParem;
@@ -111,7 +116,7 @@ public class VolleyRequestManager implements RequestManager {
             requestQueue.cancelAll(new RequestQueue.RequestFilter() {
                 @Override
                 public boolean apply(Request<?> request) {
-                    if(request.getTag().toString().contains(tag)){
+                    if (request.getTag().toString().contains(tag)) {
                         handlerCancelRequest(request);
                         return true;
                     }
@@ -134,6 +139,7 @@ public class VolleyRequestManager implements RequestManager {
 
         private RequestListner requestListner;
         private SuccessListner<T> successListner;
+        private RequestParem requestParem;
 
         public VolleyRequest(RequestParem requestParem, final RequestListner requestListner,SuccessListner<T> successListner) {
             super(requestParem.getRequestMethod(), requestParem.getUrl(), new Response.ErrorListener() {
@@ -145,6 +151,9 @@ public class VolleyRequestManager implements RequestManager {
             });
             this.requestListner = requestListner;
             this.successListner = successListner;
+            this.requestParem = requestParem;
+
+            setTag(requestListner.getTag());
         }
 
         @Override
@@ -159,7 +168,10 @@ public class VolleyRequestManager implements RequestManager {
         }
 
         @Override
-        protected   void deliverResponse(String response) {
+        protected  void deliverResponse(String response) {
+            Log.d("RequestManager","------------------------------------------------------------------");
+            //Log.d("RequestManager","result:"+response);
+            Log.d("RequestManager","------------------------------------------------------------------");
             boolean result = false;
             ErrorMessage errorMessage = null;
             if(successListner!=null){
@@ -194,6 +206,15 @@ public class VolleyRequestManager implements RequestManager {
 
         public RequestListner getRequestListner() {
             return requestListner;
+        }
+
+
+        @Override
+        protected Map<String, String> getParams() throws AuthFailureError {
+            Log.d("RequestManager","------------------------------------------------------------------");
+            Log.d("RequestManager","requestParems:"+requestParem);
+            Log.d("RequestManager","------------------------------------------------------------------");
+            return requestParem;
         }
     }
 }

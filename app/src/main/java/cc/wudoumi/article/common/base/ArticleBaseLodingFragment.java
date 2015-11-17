@@ -4,9 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
-import cc.wudoumi.article.common.util.CommonCache;
 import cc.wudoumi.framework.base.BaseLoadingFragment;
-import cc.wudoumi.framework.net.NetInterfaceFactory;
+import cc.wudoumi.framework.utils.NetUtil;
 
 /**
  * author: qianjujun on 2015/11/12 16.
@@ -26,8 +25,6 @@ public abstract class ArticleBaseLodingFragment extends BaseLoadingFragment{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        netInterface = NetInterfaceFactory.getInterface();
-
         Log.d(TAG,"onCreate:"+getRequestTag());
     }
 
