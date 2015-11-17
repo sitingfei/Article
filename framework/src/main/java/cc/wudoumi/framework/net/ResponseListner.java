@@ -4,7 +4,7 @@ package cc.wudoumi.framework.net;
 
 import java.util.UUID;
 
-
+@Deprecated
 public abstract class ResponseListner {
 	private final String tag;
 
@@ -39,6 +39,11 @@ public abstract class ResponseListner {
 	public final String getTag(){
 		return tag;
 	}
+
+
+
+
+
 
 
 }

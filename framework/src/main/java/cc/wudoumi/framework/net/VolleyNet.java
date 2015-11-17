@@ -1,6 +1,5 @@
 package cc.wudoumi.framework.net;
 
-import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
@@ -15,9 +14,10 @@ import com.android.volley.toolbox.Volley;
 import java.util.List;
 import java.util.Map;
 
+import cc.wudoumi.framework.interfaces.RequestListner;
 import cc.wudoumi.framework.utils.NetUtil;
 
-
+@Deprecated
 public class VolleyNet implements NetInterface {
 
 	private static VolleyNet instance = null;
@@ -234,6 +234,16 @@ public class VolleyNet implements NetInterface {
 				}
 			});
 		}
+	}
+
+	@Override
+	public void doRequest(RequestParem requestParem, RequestListner requestListner) {
+
+	}
+
+	@Override
+	public <T> void doRequest(RequestParem requestParem, RequestListner requestListner, cc.wudoumi.framework.interfaces.SuccessListner<T> successListner) {
+
 	}
 
 }

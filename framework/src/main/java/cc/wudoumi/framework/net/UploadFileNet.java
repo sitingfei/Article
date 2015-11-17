@@ -4,11 +4,14 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Handler;
 
+import cc.wudoumi.framework.interfaces.RequestListner;
+
 
 /**
  * author: qianjujun on 2015/10/26 16.
  * email:  qianjujun@imcoming.cn
  */
+@Deprecated
 public class UploadFileNet implements NetInterface{
 
     private static UploadFileNet uploadFileNet;
@@ -94,6 +97,16 @@ public class UploadFileNet implements NetInterface{
 
     @Override
     public void cancelContainTag(String tag) {
+
+    }
+
+    @Override
+    public void doRequest(RequestParem requestParem, RequestListner requestListner) {
+
+    }
+
+    @Override
+    public <T> void doRequest(RequestParem requestParem, RequestListner requestListner, cc.wudoumi.framework.interfaces.SuccessListner<T> successListner) {
 
     }
 }

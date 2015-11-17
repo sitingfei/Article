@@ -6,7 +6,6 @@ package cc.wudoumi.framework.net;
  */
 public class ParseDataException extends DataException {
     public ParseDataException() {
-
         super("数据解析异常");
     }
 

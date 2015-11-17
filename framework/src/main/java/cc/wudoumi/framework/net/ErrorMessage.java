@@ -82,6 +82,9 @@ public class ErrorMessage {
         }else if(e instanceof AuthException){//解析数据
             message = e.getMessage();
             errorType = TYPE_LOSE_TOKEN;
+        }else if(e instanceof EmptyDataException){//空数据
+            message = e.getMessage();
+            errorType = TYPE_NO_DATA;
         }else if(e instanceof DataException){
             message = e.getMessage();
             errorType = TYPE_DATA_PARSE;
@@ -150,4 +153,7 @@ public class ErrorMessage {
                 ", errorFlag='" + errorFlag + '\'' +
                 '}';
     }
+
+
+
 }
