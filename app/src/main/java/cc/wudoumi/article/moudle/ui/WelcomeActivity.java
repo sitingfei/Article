@@ -20,6 +20,9 @@ import cc.wudoumi.article.common.util.ParemsTool;
 import cc.wudoumi.article.dao.ArticleTypeDao;
 import cc.wudoumi.article.dao.DbHelper;
 import cc.wudoumi.article.dao.DefaultImageDao;
+import cc.wudoumi.framework.interfaces.TaskWork;
+import cc.wudoumi.framework.thread.MyTask;
+import cc.wudoumi.framework.thread.MyTaskItem;
 import cc.wudoumi.framework.utils.NetUtil;
 
 
@@ -35,7 +38,8 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_welcome);
-
+        articleTypeDao = DbHelper.getInstance().getDaoSession().getArticleTypeDao();
+        defaultImageDao = DbHelper.getInstance().getDaoSession().getDefaultImageDao();
         check();
 
 
@@ -44,12 +48,15 @@ public class WelcomeActivity extends AppCompatActivity {
     private Handler mHandler = new Handler();
 
     private void check(){
-        new Thread(){
+        MyTaskItem<Boolean> myTaskItem = new MyTaskItem<>( new TaskWork<Boolean>() {
             @Override
-            public void run() {
-                articleTypeDao = DbHelper.getInstance().getDaoSession().getArticleTypeDao();
-                defaultImageDao = DbHelper.getInstance().getDaoSession().getDefaultImageDao();
-                if(articleTypeDao.queryBuilder().count()>0){
+            public Boolean doWork() {
+                return articleTypeDao.queryBuilder().count()>0;
+            }
+
+            @Override
+            public boolean onSuccess(Boolean aVoid) throws Exception {
+                if(aVoid){
                     mHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
@@ -58,18 +65,18 @@ public class WelcomeActivity extends AppCompatActivity {
                         }
                     },500);
                 }else{
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            doWork();
-                        }
-                    });
+                    doNetWork();
                 }
+                return aVoid;
             }
-        }.start();
+        });
+        MyTask<Void> mTask = new MyTask<>(myTaskItem);
+        mTask.execute();
+
+
     }
 
-    private void doWork(){
+    private void doNetWork(){
         NetUtil.getRequestManager().doRequest(ParemsTool.getArticleType(),
                 new BaseRequestListner(this, true),
                 new GsonListSuccessListner<List<ArticleType>>(new TypeToken<List<ArticleType>>() {

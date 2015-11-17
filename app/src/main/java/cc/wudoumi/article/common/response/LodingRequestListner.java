@@ -67,7 +67,8 @@ public class LodingRequestListner extends BaseRequestListner{
         mProgressDialog = ProgressDialog.show(context, "", "正在加载数据...", true, cancelAble, new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                NetUtil.getRequestManager().cancel(getTag());
+                //NetUtil.getRequestManager().cancel(getTag());
+                LodingRequestListner.this.cancel();
             }
         });
 

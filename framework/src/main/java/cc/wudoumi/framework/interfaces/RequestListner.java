@@ -31,10 +31,37 @@ public abstract class RequestListner {
     public abstract void onEnd(boolean success,ErrorMessage e);
 
     public final void cancel(){
-        NetUtil.getRequestManager().cancel(tag);
+        //NetUtil.getRequestManager().cancel(tag);
+        if(cancelRequest!=null){
+            cancelRequest = new SimpleCancelRequest();
+        }
+
+        cancelRequest.cancel();
     }
 
     public final String getTag(){
         return tag;
+    }
+
+
+
+    public interface CancelRequestI{
+        void cancel();
+    }
+
+
+    private CancelRequestI cancelRequest;
+
+    public void setCancelRequest(CancelRequestI cancelRequest) {
+        this.cancelRequest = cancelRequest;
+    }
+
+
+    class SimpleCancelRequest implements CancelRequestI{
+
+        @Override
+        public void cancel() {
+            NetUtil.getRequestManager().cancel(getTag());
+        }
     }
 }
