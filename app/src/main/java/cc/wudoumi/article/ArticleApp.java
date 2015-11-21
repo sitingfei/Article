@@ -16,6 +16,9 @@ public class ArticleApp extends Application{
     public void onCreate() {
         super.onCreate();
 
+
+
+
         NetUtil.getRequestManager().start(this);
 
         DbHelper.init(this);
